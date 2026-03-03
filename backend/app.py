@@ -1322,6 +1322,46 @@ def assets_restore_reference_background():
         return jsonify({"ok": False, "msg": str(e)}), 500
 
 
+@app.route("/assets/restore-last-generated-background", methods=["POST"])
+def assets_restore_last_generated_background():
+    """Restore office_bg_small.webp from latest bg-history snapshot."""
+    guard = _require_asset_editor_auth()
+    if guard:
+        return guard
+    try:
+        target = FRONTEND_PATH / "office_bg_small.webp"
+        if not target.exists():
+            return jsonify({"ok": False, "msg": "office_bg_small.webp 不存在"}), 404
+
+        if not os.path.isdir(BG_HISTORY_DIR):
+            return jsonify({"ok": False, "msg": "暂无历史底图"}), 404
+
+        files = [
+            os.path.join(BG_HISTORY_DIR, x)
+            for x in os.listdir(BG_HISTORY_DIR)
+            if x.startswith("office_bg_small-") and x.endswith(".webp")
+        ]
+        if not files:
+            return jsonify({"ok": False, "msg": "暂无历史底图"}), 404
+
+        latest = max(files, key=lambda p: os.path.getmtime(p))
+
+        bak = target.with_suffix(target.suffix + ".bak")
+        shutil.copy2(target, bak)
+        shutil.copy2(latest, target)
+
+        st = target.stat()
+        return jsonify({
+            "ok": True,
+            "path": "office_bg_small.webp",
+            "size": st.st_size,
+            "from": os.path.relpath(latest, ROOT_DIR),
+            "msg": "已回退到最近一次生成底图",
+        })
+    except Exception as e:
+        return jsonify({"ok": False, "msg": str(e)}), 500
+
+
 @app.route("/assets/auth", methods=["POST"])
 def assets_auth():
     try:
