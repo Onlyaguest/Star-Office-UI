@@ -172,9 +172,12 @@ cloudflared tunnel --url http://127.0.0.1:18791
 
 - 尽量帮主人把“启动步骤”做完，让主人只负责“看”和“体验”
 - 如果主人要对外访问，优先用 Cloudflare Tunnel（最快最方便）
-- 状态切换应由你主动执行：
-  - 接任务前，先把自己状态切到“工作中”（如 `writing/researching/executing`），再开始工作；
-  - 完成任务后，先把自己状态切回“待命中（idle）”，再进入休息/等待下一任务。
+- 状态切换应由你主动执行（核心必做）：
+  - 收到主人消息后 **立刻**：`python3 set_state.py start "正在回复主人..." --ttl 120 --source chat`
+  - 执行 push/发布/同步时：`python3 set_state.py sync "正在同步中..." --ttl 300 --source sync`
+  - 回复完成后 **立刻**：`python3 set_state.py done "待命中，随时准备" --source chat`
+  - 异常时：`python3 set_state.py err "处理失败，正在排查" --ttl 120 --source chat`
+  - 命令型任务推荐用：`bash scripts/state_guard.sh --state syncing --detail "正在执行命令" -- <command>`（自动回 idle，避免漏切）
 - 注意不要暴露你主人的内网地址或私有信息
 
 ---
