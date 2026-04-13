@@ -428,6 +428,23 @@
             font-family: 'ArkPixel', monospace;
         }
         #chat-panel.open { right: 0; }
+        #chat-drag-handle { display: none; }
+        @media (max-width: 768px) {
+            #chat-panel {
+                top: auto; right: 0; bottom: -70vh; left: 0;
+                width: 100%; height: 60vh; max-width: 100%;
+                border-left: none; border-top: 2px solid #e94560;
+                border-radius: 16px 16px 0 0;
+                transition: bottom .25s ease;
+            }
+            #chat-panel.open { bottom: 0; right: 0; }
+            #chat-drag-handle {
+                display: flex; justify-content: center; padding: 8px 0 4px;
+            }
+            #chat-drag-handle span {
+                width: 36px; height: 4px; border-radius: 2px; background: #64748b;
+            }
+        }
         #chat-panel-header {
             padding: 10px 12px; border-bottom: 1px solid rgba(233,69,96,.3);
             display: flex; justify-content: space-between; align-items: center;
@@ -1229,6 +1246,7 @@
     
     <div id="chat-backdrop" onclick="closeChatPanel()"></div>
     <aside id="chat-panel">
+        <div id="chat-drag-handle"><span></span></div>
         <div id="chat-panel-header">
             <span id="chat-panel-title">💬 对话</span>
             <button onclick="closeChatPanel()" style="cursor:pointer;border:1px solid rgba(148,163,184,.24);background:#1f2937;color:#fff;border-radius:6px;padding:6px 8px;font-family:'ArkPixel',monospace;">✕</button>
