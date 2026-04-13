@@ -1265,6 +1265,25 @@ def chat():
             return jsonify({"ok": False, "error": "busy, retry later"}), 429
 
         try:
+            # Dashboard keyword → query Lark Base instead of bb ask
+            if any(kw in message for kw in ('dashboard', '看板')):
+                try:
+                    r = subprocess.run(
+                        ['lark-cli', 'base', '+record-list',
+                         '--base-token', 'ShwJbdvG5aDxMAsYTwecZAX7nXg',
+                         '--table-id', 'tblJqGocvue9n9U9', '--limit', '10'],
+                        shell=False, capture_output=True, text=True, timeout=15,
+                        cwd='/Users/yuan'
+                    )
+                    obj = json.loads(r.stdout)
+                    rows = obj.get('data', {}).get('data', [])
+                    lines = ['日期 | 碳基事件 | 任务性质 | 状态']
+                    for row in rows:
+                        lines.append(f"{row[1] or '-'} | {row[3] or '-'} | {row[4] or '-'} | {row[8] or '-'}")
+                    return jsonify({"ok": True, "reply": '\n'.join(lines)})
+                except Exception as e:
+                    return jsonify({"ok": False, "error": f"Lark Base 查询失败: {str(e)[:200]}"}), 500
+
             result = subprocess.run(
                 ["bb", "ask", crew, agent, message],
                 capture_output=True, text=True, timeout=30,
