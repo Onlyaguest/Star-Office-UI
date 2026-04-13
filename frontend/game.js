@@ -911,6 +911,24 @@ function showCatBubble() {
   setTimeout(() => { if (window.catBubble) { window.catBubble.destroy(); window.catBubble = null; } }, 4000);
 }
 
+const _replyBubbles = {};
+function showReplyBubble(agentContainer, text) {
+  if (!agentContainer || !game) return;
+  const id = agentContainer.name || ('_c' + agentContainer.x + agentContainer.y);
+  if (_replyBubbles[id]) { _replyBubbles[id].destroy(); delete _replyBubbles[id]; }
+  const display = text.length > 20 ? text.slice(0, 20) + '…' : text;
+  const bx = agentContainer.x;
+  const by = agentContainer.y - 60;
+  const bg = game.add.rectangle(bx, by, Math.min(display.length * 10 + 20, 240), 24, 0xffffff, 0.95);
+  bg.setStrokeStyle(2, 0x000000);
+  const txt = game.add.text(bx, by, display, { fontFamily: 'ArkPixel, monospace', fontSize: '11px', fill: '#000', align: 'center' }).setOrigin(0.5);
+  const bub = game.add.container(0, 0, [bg, txt]);
+  bub.setDepth(2500);
+  _replyBubbles[id] = bub;
+  setTimeout(() => { if (_replyBubbles[id] === bub) { bub.destroy(); delete _replyBubbles[id]; } }, 5000);
+}
+window.showReplyBubble = showReplyBubble;
+
 function fetchAgents() {
   fetch('/agents?t=' + Date.now(), { cache: 'no-store' })
     .then(response => response.json())
@@ -1003,6 +1021,18 @@ function renderAgent(agent) {
     statusDot.name = 'statusDot';
 
     container.add([starIcon, statusDot, nameTag]);
+
+    // Make agent clickable for chat (non-main agents only)
+    if (!isMain) {
+      container.setSize(64, 64);
+      container.setInteractive({ useHandCursor: true });
+      container.on('pointerdown', () => {
+        const crew = agent.crew || (name.includes(' ') ? name.split(' ')[0] : 'ag-crew');
+        const agentName = agent.agent_name || (name.includes(' ') ? name.split(' ').slice(1).join(' ') : name);
+        if (window.openChatPanel) window.openChatPanel(crew, agentName, name);
+      });
+    }
+
     agents[agentId] = container;
   } else {
     // 更新 agent

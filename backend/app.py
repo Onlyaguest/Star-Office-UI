@@ -1241,6 +1241,59 @@ def health():
     })
 
 
+# --- Chat feature: bb ask integration ---
+_chat_semaphore = threading.Semaphore(3)
+_CHAT_SANITIZE_RE = re.compile(r'[$;|&><`\n\r]')
+
+
+@app.route("/chat", methods=["POST"])
+def chat():
+    """Send message to agent via bb ask"""
+    try:
+        data = request.get_json()
+        if not isinstance(data, dict):
+            return jsonify({"ok": False, "error": "invalid json"}), 400
+
+        crew = (data.get("crew") or "").strip()
+        agent = (data.get("agent") or "").strip()
+        message = _CHAT_SANITIZE_RE.sub('', (data.get("message") or "").strip())[:500]
+
+        if not crew or not agent or not message:
+            return jsonify({"ok": False, "error": "missing crew, agent, or message"}), 400
+
+        if not _chat_semaphore.acquire(blocking=False):
+            return jsonify({"ok": False, "error": "busy, retry later"}), 429
+
+        try:
+            result = subprocess.run(
+                ["bb", "ask", crew, agent, message],
+                capture_output=True, text=True, timeout=30,
+                cwd="/Users/yuan/mata", shell=False
+            )
+            if result.returncode == 0:
+                return jsonify({"ok": True, "reply": result.stdout.strip()})
+            else:
+                return jsonify({"ok": False, "error": result.stderr.strip()})
+        except subprocess.TimeoutExpired:
+            return jsonify({"ok": False, "error": "timeout"}), 504
+        except Exception as e:
+            return jsonify({"ok": False, "error": str(e)[:200]}), 500
+        finally:
+            _chat_semaphore.release()
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)}), 500
+
+
+@app.route("/chat/agents", methods=["GET"])
+def chat_agents():
+    """Return list of known crew/agent pairs"""
+    return jsonify({"ok": True, "agents": [
+        {"crew": "ag-crew", "agent": "co"},
+        {"crew": "daily-manager", "agent": "co"},
+        {"crew": "brain-trust", "agent": "大管家"},
+    ]})
+
+
 @app.route("/yesterday-memo", methods=["GET"])
 def get_yesterday_memo():
     """获取昨日小日记"""
