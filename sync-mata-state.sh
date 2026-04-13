@@ -19,7 +19,10 @@ map_state() {
 while true; do
   for entry in "ag-crew:co:agent_1776086634668_821u:ag-crew co" \
                "daily-manager:co:agent_1776086634682_qxs3:daily-mgr co" \
-               "x-crew:co:agent_1776086634694_x7m3:大管家"; do
+               "x-crew:co:agent_1776086634694_x7m3:大管家" \
+               "brain-trust:co:agent_1776102608438_87r6:brain-trust co" \
+               "ems-crew:co:agent_1776102608479_r27q:ems-crew co" \
+               "roam-cli:co:agent_1776102608520_tv34:roam-cli co"; do
     CREW=$(echo "$entry" | cut -d: -f1)
     AGENT=$(echo "$entry" | cut -d: -f2)
     AGENT_ID=$(echo "$entry" | cut -d: -f3)
