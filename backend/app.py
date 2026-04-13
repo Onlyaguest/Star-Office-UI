@@ -1313,6 +1313,50 @@ def chat_agents():
     ]})
 
 
+_AGENT_CREW_MAP = {
+    'ag-crew_co': 'ag-crew',
+    'daily-mgr_co': 'daily-manager',
+    'x-crew_co': 'x-crew',
+    'ems-crew_co': 'ems-crew',
+}
+
+
+@app.route("/agent-log", methods=["GET"])
+def agent_log():
+    agent_id = (request.args.get("agent_id") or "").strip()
+    crew_name = _AGENT_CREW_MAP.get(agent_id)
+    if not crew_name:
+        return jsonify({"ok": False, "error": f"unknown agent_id: {agent_id}"}), 400
+
+    if not _chat_semaphore.acquire(blocking=False):
+        return jsonify({"ok": False, "error": "busy"}), 429
+    try:
+        r = subprocess.run(
+            ['lark-cli', 'base', '+record-list',
+             '--base-token', 'ShwJbdvG5aDxMAsYTwecZAX7nXg',
+             '--table-id', 'tblJqGocvue9n9U9', '--limit', '50'],
+            shell=False, capture_output=True, text=True, timeout=15,
+            cwd='/Users/yuan'
+        )
+        obj = json.loads(r.stdout)
+        rows = obj.get('data', {}).get('data', [])
+
+        cutoff = (datetime.now() - timedelta(days=3)).strftime('%Y-%m-%d')
+        logs = []
+        for row in rows:
+            if (row[9] or '') != crew_name:
+                continue
+            date_str = (row[1] or '')[:10]
+            if date_str < cutoff:
+                continue
+            logs.append({"date": date_str, "event": row[3] or '-', "type": row[4] or '-', "status": row[8] or '-'})
+        return jsonify({"ok": True, "logs": logs})
+    except Exception as e:
+        return jsonify({"ok": False, "error": str(e)[:200]}), 500
+    finally:
+        _chat_semaphore.release()
+
+
 @app.route("/yesterday-memo", methods=["GET"])
 def get_yesterday_memo():
     """获取昨日小日记"""
