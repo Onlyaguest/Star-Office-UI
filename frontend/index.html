@@ -5051,7 +5051,7 @@ function toggleBrokerPanel() {
                 if (/dashboard|看板/.test(msg)) {
                     cmdArgs = {session: 'x-crew', agent: 'co', message: '查看运营看板'};
                 } else {
-                    cmdArgs = {session: chatCurrentCrew, agent: chatCurrentAgent, message: msg};
+                    cmdArgs = {session: chatCurrentCrew, agent: 'co', message: msg};
                 }
                 const data = await sendCommand('ask', cmdArgs);
                 const msgs = document.getElementById('chat-messages');
