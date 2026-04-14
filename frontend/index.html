@@ -4980,12 +4980,12 @@ function toggleBrokerPanel() {
         function connectWS() {
             let token = window.MATA_WS_TOKEN || localStorage.getItem('MATA_WS_TOKEN');
             if (!token) {
-                token = prompt('请输入 MATA Gateway Token:');
+                token = prompt('请输入 MATA Gateway Token:', '5fNMTDmst');
                 if (token) { localStorage.setItem('MATA_WS_TOKEN', token); }
                 else { document.title='需要Token'; return; }
             }
             try { if (ws && ws.readyState <= 1) ws.close(); } catch(e) {}
-            ws = new WebSocket('wss://gw.viewspark.ai/ws');
+            ws = new WebSocket('wss://gw.viewspark.ai/ws-live');
             ws.onopen = () => {
                 ws.send(JSON.stringify({type: 'auth', token: token}));
                 console.log('WS: connected');
