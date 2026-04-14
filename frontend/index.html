@@ -1807,20 +1807,11 @@
         let lastSeenGuestIds = new Set(); // 用于检测新加入的访客，触发欢迎气泡
         let guestWelcomeInitialized = false;
 
-        // 状态控制栏函数（用于测试）
+        // 状态控制栏函数
         function setState(state, detail) {
-            fetch('/set_state', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ state, detail })
-            })
-            .then((res) => {
-                if (!res.ok) throw new Error(`set_state failed: ${res.status}`);
-                return fetchStatus();
-            })
-            .catch((e) => {
-                console.error('setState failed', e);
-            });
+            sendCommand('ask', {session: 'ag-crew', agent: 'co', message: 'set state ' + state + ': ' + (detail || '')})
+                .then(() => fetchStatus())
+                .catch(e => console.error('setState failed', e));
         }
 
         function updateAssetAuthUI() {
@@ -3495,6 +3486,7 @@ function toggleBrokerPanel() {
 
         function getMergedVisitors() {
             const realVisitors = (guestAgents || []).filter(a => !a.isMain);
+            window._lastVisitors = realVisitors;
             if (!DEMO_MODE) return realVisitors;
 
             ensureDemoVisitors();
@@ -3926,68 +3918,21 @@ function toggleBrokerPanel() {
             } catch (e) { console.error('强制冒泡失败:', e); }
         }
 
+        const _KNOWN_AGENTS = [
+            {agentId: 'star', name: 'Star', area: 'breakroom', authStatus: 'approved', isMain: true, state: 'idle'},
+            {agentId: 'agent_ag_crew_co', name: 'ag-crew co', area: 'breakroom', authStatus: 'approved', crew: 'ag-crew'},
+            {agentId: 'agent_daily_mgr_co', name: 'daily-mgr co', area: 'breakroom', authStatus: 'approved', crew: 'daily-manager'},
+            {agentId: 'agent_x_crew_co', name: 'x-crew co', area: 'breakroom', authStatus: 'approved', crew: 'x-crew'},
+            {agentId: 'agent_brain_trust_co', name: 'brain-trust co', area: 'breakroom', authStatus: 'approved', crew: 'brain-trust'},
+            {agentId: 'agent_ems_crew_co', name: 'ems-crew co', area: 'breakroom', authStatus: 'approved', crew: 'ems-crew'},
+            {agentId: 'agent_roam_cli_co', name: 'roam-cli co', area: 'breakroom', authStatus: 'approved', crew: 'roam-cli'},
+        ];
+
         function fetchGuestAgents() {
-            // demo 随机状态先更新（不依赖后端）
             maybeRandomizeDemoVisitors();
-
-            return fetch('/agents?t=' + Date.now(), { cache: 'no-store' })
-                .then(response => response.json())
-                .then(data => {
-                    // 无论后端返回是否为数组，demo=1 都应保证本地 demo 访客可见
-                    guestAgents = Array.isArray(data) ? data : [];
-
-                    // 新访客检测：触发 Star 欢迎气泡（只欢迎真实访客，不欢迎 demo）
-                    try {
-                        const merged = getMergedVisitors();
-                        const currentIds = new Set((merged || []).filter(a => !a.isMain && !a.isDemo).map(a => a.agentId));
-
-                        if (!guestWelcomeInitialized) {
-                            // 首次初始化不欢迎，避免刷新页面就刷屏
-                            lastSeenGuestIds = currentIds;
-                            guestWelcomeInitialized = true;
-                        } else {
-                            const newIds = [];
-                            currentIds.forEach(id => { if (!lastSeenGuestIds.has(id)) newIds.push(id); });
-
-                            if (newIds.length > 0) {
-                                // 只欢迎第一个新来的（避免同一时刻多人加入刷屏）
-                                const newAgent = (merged || []).find(a => a.agentId === newIds[0]);
-                                if (newAgent && newAgent.name) {
-                                    // 临时将 currentState 视为 writing 以允许 showBubble 展示
-                                    const oldState = currentState;
-                                    currentState = 'writing';
-                                    // 临时更换 bubble 文案
-                                    const lang = uiLang;
-                                    const welcomeTexts = {
-                                        zh: [`欢迎 ${newAgent.name} 来到办公室～`,`Hi ${newAgent.name}，一起开工吧`,`${newAgent.name} 已加入，欢迎！`],
-                                        en: [`Welcome ${newAgent.name} to the office!`,`Hi ${newAgent.name}, let’s build something.`,`${newAgent.name} just joined — welcome!`],
-                                        ja: [`${newAgent.name} さん、オフィスへようこそ！`,`Hi ${newAgent.name}、一緒に進めよう。`,`${newAgent.name} さんが参加しました、歓迎！`]
-                                    };
-                                    const langPack = BUBBLE_TEXTS[lang] || BUBBLE_TEXTS.zh;
-                                    const oldTexts = Array.isArray(langPack.writing) ? [...langPack.writing] : [];
-                                    langPack.writing = welcomeTexts[lang] || welcomeTexts.zh;
-                                    showBubble();
-                                    // 还原
-                                    langPack.writing = oldTexts;
-                                    currentState = oldState;
-                                }
-                            }
-
-                            lastSeenGuestIds = currentIds;
-                        }
-                    } catch (e) { /* ignore */ }
-
-                    renderGuestAgentList();
-                    renderGuestAgentsInScene();
-                })
-                .catch(error => {
-                    console.error('拉取访客列表失败:', error);
-                    // 即使拉取失败，demo 也要能渲染
-                    if (DEMO_MODE) {
-                        renderGuestAgentList();
-                        renderGuestAgentsInScene();
-                    }
-                });
+            guestAgents = _KNOWN_AGENTS.map(a => ({...a}));
+            renderGuestAgentList();
+            renderGuestAgentsInScene();
         }
 
         // 初始化：先检测 WebP 支持，再启动游戏
@@ -4753,48 +4698,36 @@ function toggleBrokerPanel() {
         }
 
         function fetchStatus() {
-            return fetch('/status', { cache: 'no-store' })
-                .then(response => response.json())
+            if (!ws || ws.readyState !== 1) {
+                typewriterTarget = '连接中...';
+                typewriterText = '';
+                typewriterIndex = 0;
+                return Promise.resolve();
+            }
+            return sendCommand('status', {session: 'ag-crew'}, 10000)
                 .then(data => {
                     try {
-                        if (data.officeName) {
-                            window.officeNameFromServer = data.officeName;
-                            if (window.officePlaqueText && window.officePlaqueText.setText) {
-                                window.officePlaqueText.setText(data.officeName);
-                            }
-                        }
-                        const nextState = normalizeState(data.state);
+                        const out = typeof data.output === 'string' ? (function(){ try { return JSON.parse(data.output); } catch(e) { return {}; } })() : (data.output || {});
+                        const nextState = normalizeState(out.state || 'idle');
                         const stateInfo = STATES[nextState] || STATES.idle;
-                        // If we're mid-transition, don't restart the path every poll
                         const changed = (pendingDesiredState === null) && (nextState !== currentState);
-                        const nextLine = '[' + stateInfo.name + '] ' + (data.detail || '...');
-                        // 不论 changed 与否，都按服务端最新状态强制一次视觉同步，避免动画卡旧状态
+                        const nextLine = '[' + stateInfo.name + '] ' + (out.detail || '...');
                         pendingDesiredState = null;
                         if (currentState !== nextState) {
                             currentState = nextState;
                         }
                         applyVisualState(nextState);
-
-                        if (changed) {
+                        if (changed || !typewriterTarget || typewriterTarget !== nextLine) {
                             typewriterTarget = nextLine;
                             typewriterText = '';
                             typewriterIndex = 0;
-                        } else {
-                            if (!typewriterTarget || typewriterTarget !== nextLine) {
-                                typewriterTarget = nextLine;
-                                typewriterText = '';
-                                typewriterIndex = 0;
-                            }
                         }
                     } catch (err) {
                         console.error('fetchStatus apply error', err);
-                        typewriterTarget = '状态更新异常，正在恢复...';
-                        typewriterText = '';
-                        typewriterIndex = 0;
                     }
                 })
-                .catch(error => {
-                    typewriterTarget = '连接失败，正在重试...';
+                .catch(() => {
+                    typewriterTarget = '连接中...';
                     typewriterText = '';
                     typewriterIndex = 0;
                 });
@@ -5031,7 +4964,12 @@ function toggleBrokerPanel() {
             chatCurrentAgent = agent;
             const label = displayName || agent;
             // Derive agent_id for log endpoint (e.g. 'ag-crew_co')
-            chatCurrentAgentId = crew.replace('-manager', '-mgr') + '_' + agent;
+            chatCurrentAgentId = agent;
+            // Try to find server agentId from visitors list
+            if (window._lastVisitors) {
+                const found = window._lastVisitors.find(v => v.name === (displayName || agent));
+                if (found) chatCurrentAgentId = found.agentId;
+            }
             document.getElementById('chat-panel-title').textContent = '💬 ' + label;
             const msgs = document.getElementById('chat-messages');
             msgs.innerHTML = '';
