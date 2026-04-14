@@ -784,9 +784,8 @@ function fetchStatus() {
       }
     })
     .catch(error => {
-      typewriterTarget = '连接失败，正在重试...';
-      typewriterText = '';
-      typewriterIndex = 0;
+      // Silent — status polling failure is normal when using external agents
+      console.log('fetchStatus:', error.message || 'failed');
     });
 }
 
