@@ -1636,7 +1636,7 @@
             const memoContent = document.getElementById('memo-content');
             
             try {
-                const response = await fetch('/yesterday-memo?t=' + Date.now(), { cache: 'no-store' });
+                const response = await fetch('yesterday-memo.json', { cache: 'no-store' });
                 const data = await response.json();
                 
                 if (data.success && data.memo) {
