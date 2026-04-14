@@ -5018,17 +5018,15 @@ function toggleBrokerPanel() {
         async function fetchAgentLog(agentId) {
             if (!chatCurrentCrew) return;
             try {
-                const data = await sendCommand('ask', {
-                    session: chatCurrentCrew, agent: 'co',
-                    message: '显示最近3天工作日志'
-                }, 20000);
-                const text = (data.ok ? (data.output || '') : '') || '';
-                if (!text) {
-                    chatLogCache[agentId] = '<div style="color:#64748b;text-align:center;padding:20px;">暂无日志</div>';
+                const res = await fetch('/agent-log?agent_id=' + encodeURIComponent(agentId));
+                const data = await res.json();
+                if (!data.ok || !data.logs || !data.logs.length) {
+                    chatLogCache[agentId] = '<div style="color:#64748b;text-align:center;padding:20px;">暂无今日记录</div>';
                 } else {
-                    chatLogCache[agentId] = text.split('\n').filter(l => l.trim()).map(l =>
+                    chatLogCache[agentId] = data.logs.map(l =>
                         '<div style="padding:6px 0;border-bottom:1px solid rgba(233,69,96,.15);line-height:1.6;">' +
-                        l.replace(/^(\d{4}-\d{2}-\d{2})/, '<span style="color:#e94560;">$1</span>') +
+                        '<span style="color:#e94560;">' + (l.date || '') + '</span> ' +
+                        (l.event || '') + ' <span style="color:#64748b;font-size:11px;">[' + (l.status || '') + ']</span>' +
                         '</div>'
                     ).join('');
                 }
@@ -5036,7 +5034,7 @@ function toggleBrokerPanel() {
                 if (logView.style.display !== 'none' && chatCurrentAgentId === agentId) {
                     logView.innerHTML = chatLogCache[agentId];
                 }
-            } catch(e) { chatLogCache[agentId] = '<div style="color:#e94560;">连接失败</div>'; }
+            } catch(e) { chatLogCache[agentId] = '<div style="color:#e94560;">加载失败: ' + e.message + '</div>'; }
         }
 
         function appendChatBubble(role, text) {
