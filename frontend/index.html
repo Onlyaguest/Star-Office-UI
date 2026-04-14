@@ -4979,7 +4979,7 @@ function toggleBrokerPanel() {
 
         function connectWS() {
             const token = window.MATA_WS_TOKEN || localStorage.getItem('MATA_WS_TOKEN');
-            if (!token) { console.warn('WS: no token'); return; }
+            if (!token) { document.title='需要Token'; return; }
             try { if (ws && ws.readyState <= 1) ws.close(); } catch(e) {}
             ws = new WebSocket('wss://gw.viewspark.ai/ws');
             ws.onopen = () => {
