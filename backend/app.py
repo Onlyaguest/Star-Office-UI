@@ -1340,23 +1340,32 @@ def agent_log():
         r = subprocess.run(
             ['lark-cli', 'base', '+record-list',
              '--base-token', 'ShwJbdvG5aDxMAsYTwecZAX7nXg',
-             '--table-id', 'tblJqGocvue9n9U9', '--limit', '50'],
+             '--table-id', 'tblJqGocvue9n9U9', '--limit', '100',
+             '--as', 'bot'],
             shell=False, capture_output=True, text=True, timeout=15,
             cwd='/Users/yuan'
         )
         obj = json.loads(r.stdout)
         rows = obj.get('data', {}).get('data', [])
 
-        cutoff = (datetime.now() - timedelta(days=3)).strftime('%Y-%m-%d')
+        today = datetime.now().strftime('%Y-%m-%d')
         logs = []
         for row in rows:
-            if (row[9] or '') != crew_name:
+            crew = (row[9] if len(row) > 9 else '') or ''
+            if crew != crew_name:
                 continue
             date_str = (row[1] or '')[:10]
-            if date_str < cutoff:
+            if date_str != today:
                 continue
-            logs.append({"date": date_str, "event": row[3] or '-', "type": row[4] or '-', "status": row[8] or '-'})
-        return jsonify({"ok": True, "logs": logs})
+            logs.append({
+                "date": date_str,
+                "event": row[3] or '-',
+                "type": row[4] or '-',
+                "deliverable": row[7] or '',
+                "status": row[8] or '-',
+                "note": row[6] or ''
+            })
+        return jsonify({"ok": True, "crew": crew_name, "date": today, "logs": logs})
     except Exception as e:
         return jsonify({"ok": False, "error": str(e)[:200]}), 500
     finally:

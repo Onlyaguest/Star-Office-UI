@@ -4972,6 +4972,47 @@ function toggleBrokerPanel() {
 
         // 假 Agent 气泡逻辑已移除，统一以真实 /agents 数据为准
 
+        // === WebSocket module ===
+        let ws = null;
+        const _wsPending = {}; // id -> {resolve, reject, timer}
+        let _wsIdCounter = 0;
+
+        function connectWS() {
+            const token = window.MATA_WS_TOKEN || localStorage.getItem('MATA_WS_TOKEN');
+            if (!token) { console.warn('WS: no token'); return; }
+            try { if (ws && ws.readyState <= 1) ws.close(); } catch(e) {}
+            ws = new WebSocket('wss://gw.viewspark.ai/ws');
+            ws.onopen = () => {
+                ws.send(JSON.stringify({type: 'auth', token: token}));
+                console.log('WS: connected');
+            };
+            ws.onmessage = (evt) => {
+                try {
+                    const msg = JSON.parse(evt.data);
+                    if (msg.type === 'command-response' && msg.id && _wsPending[msg.id]) {
+                        const p = _wsPending[msg.id];
+                        clearTimeout(p.timer);
+                        delete _wsPending[msg.id];
+                        p.resolve(msg);
+                    }
+                } catch(e) {}
+            };
+            ws.onclose = () => { setTimeout(connectWS, 3000); };
+            ws.onerror = () => { try { ws.close(); } catch(e) {} };
+        }
+
+        function sendCommand(name, args, timeout) {
+            return new Promise((resolve, reject) => {
+                if (!ws || ws.readyState !== 1) return reject(new Error('WS not connected'));
+                const id = 'cmd_' + (++_wsIdCounter) + '_' + Date.now();
+                const timer = setTimeout(() => { delete _wsPending[id]; reject(new Error('timeout')); }, timeout || 30000);
+                _wsPending[id] = {resolve, reject, timer};
+                ws.send(JSON.stringify({type: 'command', id, name, args}));
+            });
+        }
+
+        connectWS();
+
         // === Chat panel logic ===
         let chatCurrentAgent = null;
         let chatCurrentCrew = null;
@@ -5033,24 +5074,27 @@ function toggleBrokerPanel() {
         }
 
         async function fetchAgentLog(agentId) {
+            if (!chatCurrentCrew) return;
             try {
-                const res = await fetch('/agent-log?agent_id=' + encodeURIComponent(agentId));
-                const data = await res.json();
-                if (!data.ok) { chatLogCache[agentId] = '<div style="color:#e94560;">加载失败</div>'; return; }
-                const logs = data.logs || [];
-                if (!logs.length) { chatLogCache[agentId] = '<div style="color:#64748b;text-align:center;padding:20px;">暂无日志</div>'; }
-                else {
-                    chatLogCache[agentId] = logs.map(l =>
-                        '<div style="display:flex;gap:8px;padding:6px 0;border-bottom:1px solid rgba(233,69,96,.15);">' +
-                        '<span style="color:#e94560;white-space:nowrap;min-width:80px;">' + l.date + '</span>' +
-                        '<span style="flex:1;">' + l.event + ' <span style="color:#64748b;font-size:11px;">[' + l.type + '] ' + l.status + '</span></span></div>'
+                const data = await sendCommand('ask', {
+                    session: chatCurrentCrew, agent: 'co',
+                    message: '显示最近3天工作日志'
+                }, 20000);
+                const text = (data.ok ? (data.output || '') : '') || '';
+                if (!text) {
+                    chatLogCache[agentId] = '<div style="color:#64748b;text-align:center;padding:20px;">暂无日志</div>';
+                } else {
+                    chatLogCache[agentId] = text.split('\n').filter(l => l.trim()).map(l =>
+                        '<div style="padding:6px 0;border-bottom:1px solid rgba(233,69,96,.15);line-height:1.6;">' +
+                        l.replace(/^(\d{4}-\d{2}-\d{2})/, '<span style="color:#e94560;">$1</span>') +
+                        '</div>'
                     ).join('');
                 }
                 const logView = document.getElementById('chat-log-view');
                 if (logView.style.display !== 'none' && chatCurrentAgentId === agentId) {
                     logView.innerHTML = chatLogCache[agentId];
                 }
-            } catch(e) { chatLogCache[agentId] = '<div style="color:#e94560;">网络错误</div>'; }
+            } catch(e) { chatLogCache[agentId] = '<div style="color:#e94560;">连接失败</div>'; }
         }
 
         function appendChatBubble(role, text) {
@@ -5078,17 +5122,18 @@ function toggleBrokerPanel() {
             appendChatBubble('system', '⏳ 思考中...');
 
             try {
-                const res = await fetch('/chat', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({crew: chatCurrentCrew, agent: chatCurrentAgent, message: msg})
-                });
-                const data = await res.json();
+                let cmdArgs;
+                if (/dashboard|看板/.test(msg)) {
+                    cmdArgs = {session: 'x-crew', agent: 'co', message: '查看运营看板'};
+                } else {
+                    cmdArgs = {session: chatCurrentCrew, agent: chatCurrentAgent, message: msg};
+                }
+                const data = await sendCommand('ask', cmdArgs);
                 const msgs = document.getElementById('chat-messages');
                 const last = msgs.lastElementChild;
                 if (last && last.classList.contains('system')) msgs.removeChild(last);
 
-                const reply = (data.ok ? data.reply : (data.error || '请求失败')) || '无回复';
+                const reply = (data.ok ? (data.output || '') : (data.error || '请求失败')) || '无回复';
                 chatHistory[key].push({role: 'agent', text: reply});
                 appendChatBubble('agent', reply);
 
@@ -5098,7 +5143,7 @@ function toggleBrokerPanel() {
                 const msgs = document.getElementById('chat-messages');
                 const last = msgs.lastElementChild;
                 if (last && last.classList.contains('system')) msgs.removeChild(last);
-                appendChatBubble('system', '❌ 网络错误: ' + e.message);
+                appendChatBubble('system', '❌ ' + (e.message || '连接失败'));
             } finally {
                 btn.disabled = false;
                 input.focus();
