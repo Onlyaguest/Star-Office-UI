@@ -4918,7 +4918,7 @@ function toggleBrokerPanel() {
                 else { document.title='需要Token'; return; }
             }
             try { if (ws && ws.readyState <= 1) ws.close(); } catch(e) {}
-            ws = new WebSocket('wss://gw.viewspark.ai/ws-live');
+            ws = new WebSocket('wss://gw.viewspark.ai/ws');
             ws.onopen = () => {
                 ws.send(JSON.stringify({type: 'auth', token: token}));
                 console.log('WS: connected');
