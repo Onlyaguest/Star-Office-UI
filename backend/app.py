@@ -1318,6 +1318,12 @@ _AGENT_CREW_MAP = {
     'daily-mgr_co': 'daily-manager',
     'x-crew_co': 'x-crew',
     'ems-crew_co': 'ems-crew',
+    'agent_1776086634668_821u': 'ag-crew',
+    'agent_1776086634682_qxs3': 'daily-manager',
+    'agent_1776086634694_x7m3': 'x-crew',
+    'agent_1776102608438_87r6': 'brain-trust',
+    'agent_1776102608479_r27q': 'ems-crew',
+    'agent_1776102608520_tv34': 'roam-cli',
 }
 
 
