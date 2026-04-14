@@ -1829,6 +1829,7 @@
             panel.classList.toggle('open', !!assetManualPanelOpen && !!assetDrawerAuthed);
         }
 
+        const ASSET_DRAWER_PASS = '1234'; // default password, same as Flask default
         async function unlockAssetDrawer() {
             const input = document.getElementById('asset-pass-input');
             const msg = document.getElementById('asset-auth-msg');
@@ -1837,27 +1838,18 @@
                 if (msg) msg.textContent = '❌ 请输入验证码';
                 return;
             }
-            try {
-                const res = await fetch('/assets/auth', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ password: val })
-                });
-                const data = await res.json();
-                if (data && data.ok) {
-                    assetDrawerAuthed = true;
-                    if (msg) msg.textContent = '✅ 验证通过';
-                    updateAssetAuthUI();
-                    await refreshAssetDrawerList();
-                    await renderHomeFavorites(false);
-                    bindDrawerFileMeta();
-                } else {
-                    assetDrawerAuthed = false;
-                    if (msg) msg.textContent = '❌ 验证码错误';
-                }
-            } catch (e) {
+            if (val === ASSET_DRAWER_PASS) {
+                assetDrawerAuthed = true;
+                localStorage.setItem('assetDrawerAuthed', '1');
+                if (msg) msg.textContent = '✅ 验证通过';
+                updateAssetAuthUI();
+                await refreshAssetDrawerList();
+                await renderHomeFavorites(false);
+                bindDrawerFileMeta();
+            } else {
                 assetDrawerAuthed = false;
-                if (msg) msg.textContent = `❌ 验证失败：${e}`;
+                localStorage.removeItem('assetDrawerAuthed');
+                if (msg) msg.textContent = '❌ 验证码错误';
             }
         }
 
@@ -2564,7 +2556,7 @@
             const out = document.getElementById('asset-upload-result');
             try {
                 const selectedPath = (selectedAssetInfo && selectedAssetInfo.path) ? selectedAssetInfo.path : '';
-                const res = await fetch('/assets/list?t=' + Date.now(), { cache: 'no-store' });
+                const res = await fetch('assets-list.json', { cache: 'no-store' });
                 const data = await res.json();
                 assetListData = data.items || [];
 
@@ -2923,9 +2915,7 @@ function toggleBrokerPanel() {
 
         async function ensureGeminiConfigLoaded() {
             try {
-                const authRes = await fetch('/assets/auth/status', { cache: 'no-store' });
-                const authData = await authRes.json();
-                assetDrawerAuthed = !!(authData && authData.ok && authData.authed);
+                assetDrawerAuthed = !!localStorage.getItem('assetDrawerAuthed');
                 updateAssetAuthUI();
                 if (!assetDrawerAuthed) return;
 
@@ -3961,7 +3951,7 @@ function toggleBrokerPanel() {
             setTimeout(async () => {
                 // 动态探测 flowers 精灵表帧规格（避免写死 65x65 导致显示比例异常）
                 try {
-                    const res = await fetch('/assets/list?t=' + Date.now(), { cache: 'no-store' });
+                    const res = await fetch('assets-list.json', { cache: 'no-store' });
                     const data = await res.json();
                     if (data && data.ok && Array.isArray(data.items)) {
                         const flowerItem = data.items.find(it => (it.path || '').toLowerCase().includes('flowers-bloom-v2'));
@@ -3980,9 +3970,8 @@ function toggleBrokerPanel() {
                 // Only fetch /assets/positions and /assets/defaults when user is authed,
                 // to avoid 401 Unauthorized on first load for new visitors (issue #54).
                 try {
-                    const authRes = await fetch('/assets/auth/status', { cache: 'no-store' });
-                    const authData = await authRes.json();
-                    if (authData && authData.ok && authData.authed) {
+                    assetDrawerAuthed = !!localStorage.getItem('assetDrawerAuthed');
+                    if (assetDrawerAuthed) {
                         await applySavedPositionOverrides();
                     }
                 } catch (e) {}

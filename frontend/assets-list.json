@@ -1,0 +1,248 @@
+{
+ "ok": true,
+ "count": 35,
+ "items": [
+  {
+   "path": "btn-back-home-sprite.png",
+   "size": 599,
+   "ext": ".png",
+   "mtime": "2026-04-13T20:05:58.488968",
+   "width": 144,
+   "height": 16
+  },
+  {
+   "path": "btn-broker-sprite.png",
+   "size": 589,
+   "ext": ".png",
+   "mtime": "2026-04-13T20:05:58.489033",
+   "width": 144,
+   "height": 16
+  },
+  {
+   "path": "btn-diy-sprite.png",
+   "size": 726,
+   "ext": ".png",
+   "mtime": "2026-04-13T20:05:58.489108",
+   "width": 144,
+   "height": 16
+  },
+  {
+   "path": "btn-move-house-sprite.png",
+   "size": 503,
+   "ext": ".png",
+   "mtime": "2026-04-13T20:05:58.489177",
+   "width": 144,
+   "height": 16
+  },
+  {
+   "path": "btn-open-drawer-sprite.png",
+   "size": 1508,
+   "ext": ".png",
+   "mtime": "2026-04-13T20:05:58.489244",
+   "width": 273,
+   "height": 16
+  },
+  {
+   "path": "btn-state-sprite.png",
+   "size": 1438,
+   "ext": ".png",
+   "mtime": "2026-04-13T20:05:58.489314",
+   "width": 78,
+   "height": 16
+  },
+  {
+   "path": "cats-spritesheet.webp",
+   "size": 581484,
+   "ext": ".webp",
+   "mtime": "2026-04-13T20:05:58.489835"
+  },
+  {
+   "path": "coffee-machine-shadow-v1.png",
+   "size": 1430,
+   "ext": ".png",
+   "mtime": "2026-04-13T20:05:58.489934",
+   "width": 230,
+   "height": 230
+  },
+  {
+   "path": "coffee-machine-v3-grid.webp",
+   "size": 2560700,
+   "ext": ".webp",
+   "mtime": "2026-04-13T20:05:58.494102"
+  },
+  {
+   "path": "desk-v3.webp",
+   "size": 53926,
+   "ext": ".webp",
+   "mtime": "2026-04-13T20:05:58.494511"
+  },
+  {
+   "path": "error-bug-spritesheet-grid.webp",
+   "size": 1884712,
+   "ext": ".webp",
+   "mtime": "2026-04-13T20:05:58.497291"
+  },
+  {
+   "path": "flowers-bloom-v2.webp",
+   "size": 349282,
+   "ext": ".webp",
+   "mtime": "2026-04-13T20:05:58.497746"
+  },
+  {
+   "path": "guest_anim_1.webp",
+   "size": 468,
+   "ext": ".webp",
+   "mtime": "2026-04-13T20:05:58.526584"
+  },
+  {
+   "path": "guest_anim_2.webp",
+   "size": 464,
+   "ext": ".webp",
+   "mtime": "2026-04-13T20:05:58.526653"
+  },
+  {
+   "path": "guest_anim_3.webp",
+   "size": 306,
+   "ext": ".webp",
+   "mtime": "2026-04-13T20:05:58.526726"
+  },
+  {
+   "path": "guest_anim_4.webp",
+   "size": 322,
+   "ext": ".webp",
+   "mtime": "2026-04-13T20:05:58.526798"
+  },
+  {
+   "path": "guest_anim_5.webp",
+   "size": 364,
+   "ext": ".webp",
+   "mtime": "2026-04-13T20:05:58.526864"
+  },
+  {
+   "path": "guest_anim_6.webp",
+   "size": 364,
+   "ext": ".webp",
+   "mtime": "2026-04-13T20:05:58.526929"
+  },
+  {
+   "path": "guest_role_1.png",
+   "size": 781,
+   "ext": ".png",
+   "mtime": "2026-04-13T20:05:58.527105",
+   "width": 128,
+   "height": 64
+  },
+  {
+   "path": "guest_role_2.png",
+   "size": 1233,
+   "ext": ".png",
+   "mtime": "2026-04-13T20:05:58.527186",
+   "width": 128,
+   "height": 64
+  },
+  {
+   "path": "guest_role_3.png",
+   "size": 944,
+   "ext": ".png",
+   "mtime": "2026-04-13T20:05:58.527249",
+   "width": 128,
+   "height": 64
+  },
+  {
+   "path": "guest_role_4.png",
+   "size": 838,
+   "ext": ".png",
+   "mtime": "2026-04-13T20:05:58.527311",
+   "width": 128,
+   "height": 64
+  },
+  {
+   "path": "guest_role_5.png",
+   "size": 914,
+   "ext": ".png",
+   "mtime": "2026-04-13T20:05:58.527370",
+   "width": 128,
+   "height": 64
+  },
+  {
+   "path": "guest_role_6.png",
+   "size": 1007,
+   "ext": ".png",
+   "mtime": "2026-04-13T20:05:58.527431",
+   "width": 128,
+   "height": 64
+  },
+  {
+   "path": "memo-bg.webp",
+   "size": 3552,
+   "ext": ".webp",
+   "mtime": "2026-04-13T20:05:58.529895"
+  },
+  {
+   "path": "office_bg.webp",
+   "size": 83246,
+   "ext": ".webp",
+   "mtime": "2026-04-13T20:05:58.530192"
+  },
+  {
+   "path": "office_bg_small.webp",
+   "size": 1005878,
+   "ext": ".webp",
+   "mtime": "2026-04-13T20:05:58.533816"
+  },
+  {
+   "path": "plants-spritesheet.webp",
+   "size": 198048,
+   "ext": ".webp",
+   "mtime": "2026-04-13T20:05:58.534682"
+  },
+  {
+   "path": "posters-spritesheet.webp",
+   "size": 593952,
+   "ext": ".webp",
+   "mtime": "2026-04-13T20:05:58.537323"
+  },
+  {
+   "path": "serverroom-spritesheet.webp",
+   "size": 1019894,
+   "ext": ".webp",
+   "mtime": "2026-04-13T20:05:58.541743"
+  },
+  {
+   "path": "sofa-idle-v3.png",
+   "size": 50802,
+   "ext": ".png",
+   "mtime": "2026-04-13T20:05:58.542014",
+   "width": 256,
+   "height": 256
+  },
+  {
+   "path": "sofa-shadow-v1.png",
+   "size": 14699,
+   "ext": ".png",
+   "mtime": "2026-04-13T20:05:58.542153",
+   "width": 256,
+   "height": 256
+  },
+  {
+   "path": "star-idle-v5.png",
+   "size": 1916043,
+   "ext": ".png",
+   "mtime": "2026-04-13T20:05:58.549078",
+   "width": 2048,
+   "height": 1536
+  },
+  {
+   "path": "star-working-spritesheet-grid.webp",
+   "size": 1411026,
+   "ext": ".webp",
+   "mtime": "2026-04-13T20:05:58.553580"
+  },
+  {
+   "path": "sync-animation-v3-grid.webp",
+   "size": 2104572,
+   "ext": ".webp",
+   "mtime": "2026-04-13T20:05:58.555584"
+  }
+ ]
+}
