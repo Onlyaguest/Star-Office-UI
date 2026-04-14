@@ -5018,17 +5018,13 @@ function toggleBrokerPanel() {
         async function fetchAgentLog(agentId) {
             if (!chatCurrentCrew) return;
             try {
-                const res = await fetch('/agent-log?agent_id=' + encodeURIComponent(agentId));
-                const data = await res.json();
-                if (!data.ok || !data.logs || !data.logs.length) {
+                const data = await sendCommand('ask', {session: chatCurrentCrew, agent: 'co', message: '显示最近工作日志'}, 20000);
+                const output = data.output || '';
+                if (!output.trim()) {
                     chatLogCache[agentId] = '<div style="color:#64748b;text-align:center;padding:20px;">暂无今日记录</div>';
                 } else {
-                    chatLogCache[agentId] = data.logs.map(l =>
-                        '<div style="padding:6px 0;border-bottom:1px solid rgba(233,69,96,.15);line-height:1.6;">' +
-                        '<span style="color:#e94560;">' + (l.date || '') + '</span> ' +
-                        (l.event || '') + ' <span style="color:#64748b;font-size:11px;">[' + (l.status || '') + ']</span>' +
-                        '</div>'
-                    ).join('');
+                    chatLogCache[agentId] = '<div style="padding:6px 0;line-height:1.8;white-space:pre-wrap;">' +
+                        output.replace(/(\d{4}-\d{2}-\d{2})/g, '<span style="color:#e94560;">$1</span>') + '</div>';
                 }
                 const logView = document.getElementById('chat-log-view');
                 if (logView.style.display !== 'none' && chatCurrentAgentId === agentId) {
