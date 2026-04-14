@@ -1286,7 +1286,7 @@ def chat():
 
             result = subprocess.run(
                 ["bb", "ask", crew, agent, message],
-                capture_output=True, text=True, timeout=30,
+                capture_output=True, text=True, timeout=120,
                 cwd="/Users/yuan/mata", shell=False
             )
             if result.returncode == 0:
