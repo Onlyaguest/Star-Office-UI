@@ -4978,8 +4978,12 @@ function toggleBrokerPanel() {
         let _wsIdCounter = 0;
 
         function connectWS() {
-            const token = window.MATA_WS_TOKEN || localStorage.getItem('MATA_WS_TOKEN');
-            if (!token) { document.title='需要Token'; return; }
+            let token = window.MATA_WS_TOKEN || localStorage.getItem('MATA_WS_TOKEN');
+            if (!token) {
+                token = prompt('请输入 MATA Gateway Token:');
+                if (token) { localStorage.setItem('MATA_WS_TOKEN', token); }
+                else { document.title='需要Token'; return; }
+            }
             try { if (ws && ws.readyState <= 1) ws.close(); } catch(e) {}
             ws = new WebSocket('wss://gw.viewspark.ai/ws');
             ws.onopen = () => {
