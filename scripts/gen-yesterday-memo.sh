@@ -11,9 +11,10 @@ if [ -z "$RAW" ]; then
 else
   python3 -c "
 import json,sys
-lines=[l.strip() for l in sys.stdin.read().strip().split('\n') if l.strip() and not l.strip().startswith('#')]
-bullets=[l[2:].strip() if l.startswith('- ') else l for l in lines][:3]
-memo='\n'.join('· '+b[:40] for b in bullets) if bullets else '暂无内容'
+raw=sys.stdin.read().strip()
+lines=[l.strip() for l in raw.split('\n') if l.strip() and not l.strip().startswith('#')]
+bullets=[l[2:].strip() if l.startswith('- ') else l for l in lines][:5]
+memo='\n'.join('· '+b for b in bullets) if bullets else raw[:200]
 json.dump({'success':True,'date':'$YDATE','memo':memo},open('$OUTDIR/yesterday-memo.json','w'),ensure_ascii=False)
 " <<< "$RAW"
 fi

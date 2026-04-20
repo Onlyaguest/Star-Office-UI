@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Star 的像素办公室</title>
+    <title>元子的像素办公室</title>
     <style>
         @font-face {
             font-family: 'ArkPixel';
@@ -708,7 +708,7 @@
             background: #4a4f5f;
             border-color: #e94560;
         }
-        /* Star 状态四按钮（不含装修）使用像素精灵皮肤 */
+        /* 元子 状态四按钮（不含装修）使用像素精灵皮肤 */
         #control-bar #btn-state-idle,
         #control-bar #btn-state-writing,
         #control-bar #btn-state-syncing,
@@ -990,11 +990,13 @@
             white-space: pre-wrap;
             word-wrap: break-word;
             overflow-y: auto;
+            overflow-x: hidden;
             flex-grow: 1;
             padding-right: 4px;
             position: relative;
             left: 100px; /* move content right by 100px */
             top: -10px;
+            max-width: calc(100% - 110px);
         }
         #memo-content::-webkit-scrollbar {
             width: 6px;
@@ -1225,7 +1227,7 @@
         
         <!-- 状态控制栏 -->
         <div id="control-bar">
-            <div id="control-bar-title">Star 状态</div>
+            <div id="control-bar-title">元子 状态</div>
             <div id="control-buttons">
                 <button id="btn-state-idle" onclick="setState('idle','待命')">待命</button>
                 <button id="btn-state-writing" onclick="setState('writing','工作中')">工作</button>
@@ -1377,7 +1379,7 @@
         let uiLang = localStorage.getItem('uiLang') || 'en';
         const I18N = {
             zh: {
-                controlTitle: 'Star 状态',
+                controlTitle: '元子 状态',
                 btnIdle: '待命', btnWork: '工作', btnSync: '同步', btnError: '报警', btnDecor: '装修房间',
                 drawerTitle: '装修房间 · 资产侧边栏', drawerClose: '关闭',
                 authTitle: '请输入装修验证码', authPlaceholder: '输入验证码', authVerify: '验证', authDefaultPassHint: '默认密码：1234（可随时让我帮你改，建议改成强密码）',
@@ -1401,11 +1403,11 @@
                 assetHintNotInScene: '当前场景未检测到此对象，仍可替换文件（刷新后生效）',
                 assetHintDefault: '通用素材：建议保持原图尺寸、透明通道与视觉重心一致，避免错位或失真',
                 showCoords: '显示坐标', hideCoords: '隐藏坐标', moveView: '移动视野', lockView: '锁定视野',
-                memoTitle: '昨 日 小 记', guestTitle: '访 客 列 表', officeTitle: '海辛小龙虾的办公室',
-                loadingOffice: '正在加载 Star 的像素办公室...'
+                memoTitle: '昨 日 小 记', guestTitle: '访 客 列 表', officeTitle: '元子的办公室',
+                loadingOffice: '正在加载 元子的像素办公室...'
             },
             en: {
-                controlTitle: 'Star Status',
+                controlTitle: '元子 Status',
                 btnIdle: 'Idle', btnWork: 'Work', btnSync: 'Sync', btnError: 'Alert', btnDecor: 'Decorate Room',
                 drawerTitle: 'Decorate Room · Asset Sidebar', drawerClose: 'Close',
                 authTitle: 'Enter Decor Passcode', authPlaceholder: 'Enter passcode', authVerify: 'Verify', authDefaultPassHint: 'Default passcode: 1234 (ask me anytime to change it; stronger passcode recommended)',
@@ -1433,7 +1435,7 @@
                 loadingOffice: 'Loading Star’s pixel office...'
             },
             ja: {
-                controlTitle: 'Star ステータス',
+                controlTitle: '元子 ステータス',
                 btnIdle: '待機', btnWork: '作業', btnSync: '同期', btnError: '警報', btnDecor: '部屋を編集',
                 drawerTitle: '部屋編集・アセットサイドバー', drawerClose: '閉じる',
                 authTitle: '編集パスコードを入力', authPlaceholder: 'パスコード入力', authVerify: '認証', authDefaultPassHint: '初期パスコード：1234（いつでも変更を相談可。強固なパス推奨）',
@@ -4104,7 +4106,7 @@ function toggleBrokerPanel() {
             sofa.anims.stop();
             sofa.setTexture('sofa_idle');
 
-            // 加像素风小牌匾：海辛小龙虾的办公室
+            // 加像素风小牌匾：元子的办公室
             const plaqueX = config.width / 2;
             const plaqueY = config.height - 36;
             const plaqueBg = game.add.rectangle(plaqueX, plaqueY, 420, 44, 0x5d4037);
