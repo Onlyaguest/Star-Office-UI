@@ -3679,10 +3679,26 @@ function toggleBrokerPanel() {
 
                     guestSprites[id] = { sprite, nameText };
 
-                    // Make non-demo guest sprites clickable for chat
+                    // Make non-demo guest sprites draggable + clickable for chat
                     if (!isDemo && !agent.isMain) {
-                        sprite.setInteractive({ useHandCursor: true });
-                        sprite.on('pointerdown', () => { openChatPanel(agent.crew || 'ag-crew', agent.agent || agent.name || '访客', agent.name || '访客'); });
+                        sprite.setInteractive({ useHandCursor: true, draggable: true });
+                        let dragStartTime = 0;
+                        sprite.on('dragstart', () => { dragStartTime = Date.now(); });
+                        sprite.on('drag', (pointer, dragX, dragY) => {
+                            sprite.x = dragX;
+                            sprite.y = dragY;
+                            const g = guestSprites[id];
+                            if (g && g.nameText) { g.nameText.x = dragX; g.nameText.y = dragY - 120; }
+                            // Move bubble if exists
+                            if (guestBubbles[id]) { guestBubbles[id].destroy(); delete guestBubbles[id]; }
+                        });
+                        sprite.on('dragend', () => {});
+                        sprite.on('pointerup', () => {
+                            if (Date.now() - dragStartTime < 200) {
+                                openChatPanel(agent.crew || 'ag-crew', agent.agent || agent.name || '访客', agent.name || '访客');
+                            }
+                        });
+                        game.input.setDraggable(sprite);
                     }
                 } else {
                     const g = guestSprites[id];
